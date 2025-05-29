@@ -8,15 +8,15 @@ module.exports.getItems = (req, res) => {
 };
 
 module.exports.postItems = (req, res) => {
-  const { itemName, weatherType, imageUrl } = req.body;
+  const { name, weather, imageUrl } = req.body;
   const owner = req.user._id;
-  ClothingItems.create({ itemName, weatherType, imageUrl, owner })
+  ClothingItems.create({ name, weather, imageUrl, owner })
     .then((clothingItems) => res.send({ data: clothingItems }))
     .catch((err) => handleError(err, res));
 };
 
 module.exports.deleteItem = (req, res) => {
-  ClothingItems.findByIdAndRemove(req.params.itemId)
+  ClothingItems.findByIdAndDelete(req.params.id)
     .orFail()
     .then((clothingItems) => res.send({ data: clothingItems }))
     .catch((err) => handleError(err, res));
