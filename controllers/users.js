@@ -3,14 +3,8 @@ const jwt = require("jsonwebtoken");
 const Users = require("../models/users");
 const { JWT_SECRET } = require("../utils/config");
 const { handleError } = require("../utils/errors");
-const { sendUsersResponse } = require("../utils/formatUser");
+const { SOME_ERROR_CODE } = require("../utils/errors");
 const { sendUserResponse } = require("../utils/formatUser");
-
-module.exports.getUsers = (req, res) => {
-  Users.find({})
-    .then((users) => sendUsersResponse(res, users))
-    .catch((err) => handleError(err, res));
-};
 
 module.exports.getCurrentUser = (req, res) => {
   Users.findById(req.user._id)
@@ -32,11 +26,10 @@ module.exports.createUser = (req, res) => {
 module.exports.login = (req, res) => {
   const { email, password } = req.body;
 
-  const missingFields = new Error("Email and password are required");
-  missingFields.code = 400;
-
   if (!email || !password) {
-    return handleError(missingFields, res);
+    return res.status(SOME_ERROR_CODE.INVALID_DATA).send({
+      message: "Email and password are required.",
+    });
   }
   return Users.findUserByCredentials(email, password)
 

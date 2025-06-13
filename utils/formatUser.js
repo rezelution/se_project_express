@@ -11,11 +11,6 @@ function sendUserResponse(res, user) {
   res.send({ data: formatUser(user) });
 }
 
-function sendUsersResponse(res, users) {
-  res.send({ data: users.map(formatUser) });
-}
-
 module.exports = {
   sendUserResponse,
-  sendUsersResponse,
 };

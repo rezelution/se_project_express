@@ -1,5 +1,7 @@
 const ClothingItems = require("../models/clothingItems");
 const { handleError } = require("../utils/errors");
+const { SOME_ERROR_CODE } = require("../utils/errors");
+const { SOME_ERROR_MSGS } = require("../utils/errors");
 
 module.exports.getItems = (req, res) => {
   ClothingItems.find({})
@@ -20,10 +22,8 @@ module.exports.deleteItem = (req, res) => {
     .orFail()
     .then((item) => {
       if (item.owner.toString() !== req.user._id.toString()) {
-        const error = new Error(
-          "You can't delete this item because you are not the owner."
-        );
-        error.code = 403;
+        const error = new Error(SOME_ERROR_MSGS.forbidden);
+        error.code = SOME_ERROR_CODE.FORBIDDEN;
         throw error;
       }
       return ClothingItems.findByIdAndDelete(req.params.id).orFail();
