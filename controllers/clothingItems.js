@@ -16,9 +16,19 @@ module.exports.postItems = (req, res) => {
 };
 
 module.exports.deleteItem = (req, res) => {
-  ClothingItems.findByIdAndDelete(req.params.id)
+  ClothingItems.findById(req.params.id)
     .orFail()
-    .then((clothingItems) => res.send({ data: clothingItems }))
+    .then((item) => {
+      if (item.owner.toString() !== req.user._id.toString()) {
+        const error = new Error(
+          "You can't delete this item because you are not the owner."
+        );
+        error.code = 403;
+        throw error;
+      }
+      return ClothingItems.findByIdAndDelete(req.params.id).orFail();
+    })
+    .then((deletedItem) => res.send({ data: deletedItem }))
     .catch((err) => handleError(err, res));
 };
 

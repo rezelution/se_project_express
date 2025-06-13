@@ -1,7 +1,10 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const helmet = require("helmet");
+const cors = require("cors");
 const { SOME_ERROR_CODE } = require("./utils/errors");
+const { login, createUser } = require("./controllers/users");
+const auth = require("./middlewares/auth");
 
 // listen to port 3001
 const { PORT = 3001 } = process.env;
@@ -13,14 +16,12 @@ mongoose.connect("mongodb://127.0.0.1:27017/wtwr_db");
 app.use(express.json());
 
 app.use(helmet());
+app.use(cors());
 
-app.use((req, res, next) => {
-  req.user = {
-    _id: "68376f25c02de3236bd98b80",
-  };
-  next();
-});
+app.post("/signin", login);
+app.post("/signup", createUser);
 
+app.use(auth);
 app.use("/", require("./routes/users"));
 app.use("/", require("./routes/clothingItems"));
 

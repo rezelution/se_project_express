@@ -2,117 +2,133 @@
 
 ## Overview
 
-What To Wear is a weather-driven outfit recommendation app. This project is the back-end server built with Node.js, Express, and MongoDB. It supports core functionality such as user profile creation, clothing item management, and weather-based clothing suggestions.
+**What To Wear** is a weather-driven outfit recommendation app. This project is the back-end server built with **Node.js**, **Express**, and **MongoDB**. It supports features like user authentication, secure session management, profile editing, clothing item CRUD operations, and personalized outfit recommendations based on weather.
 
-The server exposes RESTful API endpoints to interact with a MongoDB database, which stores user data and clothing items. It also integrates with a third-party weather API to provide personalized outfit recommendations based on real-time weather conditions.
+---
 
 ## Technologies Used
 
-| Technology | Purpose                                             |
-| ---------- | --------------------------------------------------- |
-| Node.js    | JavaScript runtime for server-side code             |
-| Express.js | Web framework to build RESTful APIs                 |
-| MongoDB    | NoSQL database for storing users and clothes        |
-| Mongoose   | ODM to model and validate MongoDB schemas           |
-| Helmet     | Middleware to set HTTP headers for security         |
-| Validator  | To validate avatar and image URLs                   |
-| dotenv     | Manage environment variables (optional setup ready) |
+| Technology   | Purpose                                                |
+| ------------ | ------------------------------------------------------ |
+| Node.js      | JavaScript runtime for server-side code                |
+| Express.js   | Web framework to build RESTful APIs                    |
+| MongoDB      | NoSQL database for storing users and clothes           |
+| Mongoose     | ODM to model and validate MongoDB schemas              |
+| Helmet       | Middleware to set secure HTTP headers                  |
+| Validator    | Validate email, avatar, and image URLs                 |
+| bcryptjs     | Hash and compare passwords securely                    |
+| jsonwebtoken | Generate and verify JWTs for user sessions             |
+| dotenv       | Manage environment variables (optional setup ready)    |
+| CORS         | Enable cross-origin requests between front-end and API |
+
+---
 
 ## Functionality
 
-This server provides:
+### 🔐 Authentication & Authorization
 
-- User Management
+- Secure user sign-up and sign-in with email/password.
+- Passwords are hashed before being stored.
+- JWT-based authentication (expires in 7 days).
+- All routes (except `/signin`, `/signup`, and `GET /items`) are protected by middleware.
+- Unauthorized or invalid tokens result in a `401 Unauthorized` error.
 
-  - Create a user with a name and avatar (validated URL).
-  - Retrieve a list of all users or a specific user by ID.
+### 👤 User Management
 
-- Clothing Items Management
+- Create new users with validated email and password.
+- Password is excluded from all API responses.
+- Modify user profile with `PATCH /users/me` (name and avatar).
+- Get the current user's profile with `GET /users/me`.
 
-  - Add a clothing item with name, weather type (hot, warm, cold), and image URL.
-  - Delete items by ID.
-  - Like or dislike an item.
-  - Fetch all clothing items.
+### 🧥 Clothing Items
 
-- Weather Integration (via front-end)
-  - The front-end makes a call to a weather API based on the user’s location.
-  - Based on the temperature, only clothing items matching the appropriate weather category are shown.
+- Create a clothing item with name, weather type (hot, warm, cold), and image URL.
+- Delete clothing items (only if the user is the owner).
+- Like or dislike clothing items.
+- Retrieve all items with `GET /items`.
 
-## Folder Structure
-  - /controllers → Business logic and route handlers
-  - /models → Mongoose schema definitions
-  - /routes → Express route definitions
-  - /utils → Error constants and error handler
-  - app.js → App configuration and middleware setup
+### 🌦️ Weather Integration (handled via front-end)
 
+- Front-end fetches real-time weather and filters clothes accordingly by weather type.
+
+---
 
 ## API Routes
 
-### Users
+### 🔐 Authentication
 
-| Method | Endpoint        | Description               |
-|--------|------------------|---------------------------|
-| GET    | /users           | Get all users             |
-| GET    | /users/:userId   | Get a user by ID          |
-| POST   | /users           | Create a new user         |
+| Method | Endpoint | Description         |
+| ------ | -------- | ------------------- |
+| POST   | /signup  | Register a new user |
+| POST   | /signin  | Login and get JWT   |
 
-### Clothing Items
+### 👤 Users
 
-| Method | Endpoint                | Description                        |
-|--------|-------------------------|------------------------------------|
-| GET    | /items                  | Get all clothing items             |
-| POST   | /items                  | Create a new clothing item         |
-| DELETE | /items/:id              | Delete an item by ID               |
-| PUT    | /items/:itemId/likes    | Like an item                       |
-| DELETE | /items/:itemId/likes    | Remove like from an item           |
+| Method | Endpoint  | Description              |
+| ------ | --------- | ------------------------ |
+| GET    | /users/me | Get current user profile |
+| PATCH  | /users/me | Update name and avatar   |
+
+### 🧥 Clothing Items
+
+| Method | Endpoint             | Description                    |
+| ------ | -------------------- | ------------------------------ |
+| GET    | /items               | Get all clothing items         |
+| POST   | /items               | Add a new clothing item        |
+| DELETE | /items/:id           | Delete item by ID (owner only) |
+| PUT    | /items/:itemId/likes | Like an item                   |
+| DELETE | /items/:itemId/likes | Remove like from an item       |
+
+---
 
 ## Security
 
-- Helmet Middleware: Sets secure HTTP headers to help prevent common vulnerabilities, such as open redirects.
-- URL Validation: All avatar and image URLs are validated using the `validator` package to ensure proper formatting and prevent malicious links.
+- **Helmet**: Secures HTTP headers against common threats.
+- **Validator**: Ensures email, avatar, and image URLs are properly formatted.
+- **Hashed Passwords**: Securely stores user credentials with bcrypt.
+- **JWT Tokens**: Provides secure and stateless authentication.
+
+---
 
 ## Error Handling
 
-The app uses a centralized error-handling system (`utils/errors.js`) with predefined error codes and messages for:
+Centralized error handler supports:
 
-- Validation errors
-- Document not found errors
-- General server errors
+- `400` - Validation and missing field errors
+- `401` - Unauthorized access (JWT errors)
+- `403` - Forbidden actions (e.g. deleting others' items)
+- `404` - Resource not found
+- `409` - Duplicate email on registration
+- `500` - Server/internal errors
 
-This modular approach makes the system scalable and easier to maintain as more error types are introduced.
+---
 
 ## Notable Code Features
 
-### app.js Highlights
+### 🧩 Authentication Middleware (`auth.js`)
 
-- Connects to MongoDB using Mongoose.
-- Applies middleware for JSON parsing and security (helmet).
-- Injects a hardcoded `req.user._id` for testing (to simulate logged-in behavior).
-- Sets up route modules for `/users` and `/items`.
-- Adds a catch-all 404 route for unknown endpoints.
+- Extracts and verifies JWT from `Authorization` header.
+- Injects the decoded user ID into `req.user`.
 
-### Controllers
+### 🧾 User Model Enhancements
 
-- Encapsulate logic for database operations and response formatting.
-- Use `orFail()` to catch empty query results and handle them gracefully.
-- All database errors are passed to a reusable `handleError` function.
+- Added `email` (unique and validated) and `password` (hashed, hidden in responses).
+- Custom `findUserByCredentials` method for login with password comparison.
 
-### Schemas
+### 👕 Ownership Checks in Deletion
 
-- User Schema: Name and avatar with URL validation.
-- Clothing Item Schema: Includes name, image URL, owner reference, weather category (hot, warm, cold), and support for likes (referencing user IDs).
+- Items can only be deleted by their owner (`403 Forbidden` if not).
 
-## Future Improvements
+### 🧪 Validation on Updates
 
-- Implement user authentication using JWT for real user sessions.
-- Add authorization to restrict actions to item owners only.
-- Integrate caching (e.g., Redis) for weather API calls.
-- Allow users to filter clothing items by tags (e.g., casual, formal).
-- Support user-specific weather preference settings.
+- `PATCH /users/me` uses Mongoose validators to ensure data quality.
+
+---
 
 ## Running the Project
 
-`npm run start` — to launch the server
-
-`npm run dev` — to launch the server with the hot reload feature
-
+```bash
+npm install      # install dependencies
+npm run start    # start server
+npm run dev      # start server with hot reload
+```
