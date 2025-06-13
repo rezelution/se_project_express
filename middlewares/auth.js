@@ -23,5 +23,5 @@ module.exports = (req, res, next) => {
   }
 
   req.user = payload; // Attach the payload to the request
-  next();
+  return next();
 };
