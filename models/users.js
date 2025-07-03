@@ -10,9 +10,9 @@ const userSchema = new mongoose.Schema({
     minlength: 2,
     maxlength: 30,
   },
-  avatar: {
+  imageUrl: {
     type: String,
-    required: true,
+    required: false,
     validate: {
       validator(value) {
         return validator.isURL(value);

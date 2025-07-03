@@ -2,13 +2,17 @@ function formatUser(user) {
   return {
     name: user.name,
     email: user.email,
-    avatar: user.avatar,
+    imageUrl: user.imageUrl,
     _id: user._id,
   };
 }
 
-function sendUserResponse(res, user) {
-  res.send({ data: formatUser(user) });
+function sendUserResponse(res, user, token = null) {
+  if (token) {
+    res.send({ data: formatUser(user), token });
+  } else {
+    res.send({ data: formatUser(user) });
+  }
 }
 
 module.exports = {

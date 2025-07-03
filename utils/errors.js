@@ -51,7 +51,7 @@ const handleError = (err, res) => {
 
   if (err.code === 400) {
     return res.status(SOME_ERROR_CODE.INVALID_DATA).send({
-      message: err.message || SOME_ERROR_MSGS.invalid_data,
+      message: err.message || SOME_ERROR_MSGS.invalidData,
     });
   }
 

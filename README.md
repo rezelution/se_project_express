@@ -18,7 +18,7 @@
 | Validator    | Validate email, avatar, and image URLs                 |
 | bcryptjs     | Hash and compare passwords securely                    |
 | jsonwebtoken | Generate and verify JWTs for user sessions             |
-| dotenv       | Manage environment variables (optional setup ready)    |
+| dotenv       | Manage environment variables                           |
 | CORS         | Enable cross-origin requests between front-end and API |
 
 ---
@@ -27,108 +27,89 @@
 
 ### 🔐 Authentication & Authorization
 
-- Secure user sign-up and sign-in with email/password.
-- Passwords are hashed before being stored.
-- JWT-based authentication (expires in 7 days).
-- All routes (except `/signin`, `/signup`, and `GET /items`) are protected by middleware.
-- Unauthorized or invalid tokens result in a `401 Unauthorized` error.
+- Secure user registration and login via `/signup` and `/signin`
+- Passwords hashed using bcrypt before being stored
+- JWT-based authentication with 7-day expiry
+- Tokens returned to client, stored in localStorage
+- Middleware protects all private routes
+- Unauthorized access returns `401 Unauthorized`
 
 ### 👤 User Management
 
-- Create new users with validated email and password.
-- Password is excluded from all API responses.
-- Modify user profile with `PATCH /users/me` (name and avatar).
-- Get the current user's profile with `GET /users/me`.
+- `POST /signup`: Create new users (email, password, name, avatar)
+- `POST /signin`: Authenticate and return JWT
+- `GET /users/me`: Get current logged-in user's profile
+- `PATCH /users/me`: Edit user name and avatar
 
 ### 🧥 Clothing Items
 
-- Create a clothing item with name, weather type (hot, warm, cold), and image URL.
-- Delete clothing items (only if the user is the owner).
-- Like or dislike clothing items.
-- Retrieve all items with `GET /items`.
+- `GET /items`: Public endpoint to get all clothing items
+- `POST /items`: Create a new clothing item (auth required)
+- `DELETE /items/:id`: Delete clothing item (owner-only)
+- `PUT /items/:itemId/likes`: Like an item
+- `DELETE /items/:itemId/likes`: Remove like from an item
 
-### 🌦️ Weather Integration (handled via front-end)
+### 🌦️ Weather Integration
 
-- Front-end fetches real-time weather and filters clothes accordingly by weather type.
+- Weather data is handled via the frontend and used to filter clothing recommendations
 
 ---
 
-## API Routes
+## New Feature Highlights
 
-### 🔐 Authentication
-
-| Method | Endpoint | Description         |
-| ------ | -------- | ------------------- |
-| POST   | /signup  | Register a new user |
-| POST   | /signin  | Login and get JWT   |
-
-### 👤 Users
-
-| Method | Endpoint  | Description              |
-| ------ | --------- | ------------------------ |
-| GET    | /users/me | Get current user profile |
-| PATCH  | /users/me | Update name and avatar   |
-
-### 🧥 Clothing Items
-
-| Method | Endpoint             | Description                    |
-| ------ | -------------------- | ------------------------------ |
-| GET    | /items               | Get all clothing items         |
-| POST   | /items               | Add a new clothing item        |
-| DELETE | /items/:id           | Delete item by ID (owner only) |
-| PUT    | /items/:itemId/likes | Like an item                   |
-| DELETE | /items/:itemId/likes | Remove like from an item       |
+- Added JWT-based **registration, login, and session authorization**
+- Integrated **like/dislike system** for clothing items
+- Enabled **profile editing** (name and avatar updates)
+- Secure routes with ownership checks and user-based content access
+- Extended schema validation for all endpoints and models
 
 ---
 
 ## Security
 
-- **Helmet**: Secures HTTP headers against common threats.
-- **Validator**: Ensures email, avatar, and image URLs are properly formatted.
-- **Hashed Passwords**: Securely stores user credentials with bcrypt.
-- **JWT Tokens**: Provides secure and stateless authentication.
+- **Helmet** for HTTP header protection
+- **Validator** to ensure safe and well-formed inputs
+- **Hashed Passwords** using bcrypt
+- **JWTs** for stateless and secure session handling
 
 ---
 
 ## Error Handling
 
-Centralized error handler supports:
+Supports standardized error responses:
 
-- `400` - Validation and missing field errors
-- `401` - Unauthorized access (JWT errors)
-- `403` - Forbidden actions (e.g. deleting others' items)
-- `404` - Resource not found
-- `409` - Duplicate email on registration
-- `500` - Server/internal errors
+- `400` – Validation or bad input
+- `401` – Unauthorized (JWT missing/invalid)
+- `403` – Forbidden (ownership mismatch)
+- `404` – Resource not found
+- `409` – Duplicate registration
+- `500` – Server errors
 
 ---
 
 ## Notable Code Features
 
-### 🧩 Authentication Middleware (`auth.js`)
+### 🧩 Authentication Middleware
 
-- Extracts and verifies JWT from `Authorization` header.
-- Injects the decoded user ID into `req.user`.
+- Extracts and verifies JWT from request headers
+- Injects decoded user into `req.user`
 
-### 🧾 User Model Enhancements
+### 👤 User Model Enhancements
 
-- Added `email` (unique and validated) and `password` (hashed, hidden in responses).
-- Custom `findUserByCredentials` method for login with password comparison.
+- Custom static method `findUserByCredentials` for login
+- Email and password fields with schema validation
 
-### 👕 Ownership Checks in Deletion
+### 💾 Ownership Checks
 
-- Items can only be deleted by their owner (`403 Forbidden` if not).
-
-### 🧪 Validation on Updates
-
-- `PATCH /users/me` uses Mongoose validators to ensure data quality.
+- Deletion and update routes require item ownership
+- Forbidden requests return `403`
 
 ---
 
 ## Running the Project
 
 ```bash
-npm install      # install dependencies
-npm run start    # start server
-npm run dev      # start server with hot reload
+npm install      # Install dependencies
+npm run start    # Start server
+npm run dev      # Start server with hot reload
 ```

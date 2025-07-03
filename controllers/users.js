@@ -7,6 +7,7 @@ const { SOME_ERROR_CODE } = require("../utils/errors");
 const { sendUserResponse } = require("../utils/formatUser");
 
 module.exports.getCurrentUser = (req, res) => {
+  console.log(req.user);
   Users.findById(req.user._id)
     .orFail()
     .then((user) => sendUserResponse(res, user))
@@ -14,11 +15,11 @@ module.exports.getCurrentUser = (req, res) => {
 };
 
 module.exports.createUser = (req, res) => {
-  const { name, avatar, email, password } = req.body;
+  const { name, imageUrl, email, password } = req.body;
 
   bcrypt
     .hash(password, 10)
-    .then((hash) => Users.create({ name, avatar, email, password: hash }))
+    .then((hash) => Users.create({ name, imageUrl, email, password: hash }))
     .then((user) => sendUserResponse(res, user))
     .catch((err) => handleError(err, res));
 };
@@ -37,16 +38,16 @@ module.exports.login = (req, res) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
-      res.send({ token });
+      sendUserResponse(res, user, token);
     })
     .catch((err) => handleError(err, res));
 };
 
 module.exports.updateProfile = (req, res) => {
-  const { name, avatar } = req.body;
+  const { name, imageUrl } = req.body;
   Users.findByIdAndUpdate(
     req.user._id,
-    { name, avatar },
+    { name, imageUrl },
     {
       new: true,
       runValidators: true,
