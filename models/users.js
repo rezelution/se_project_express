@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
-const { SOME_ERROR_CODE } = require("../utils/errors");
+const UnauthorizedError = require("../errors/unAuthorizedError");
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -39,8 +39,7 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.statics.findUserByCredentials = function (email, password) {
-  const error = new Error("Incorrect email or password");
-  error.code = SOME_ERROR_CODE.AUTHORIZATION_REQUIRED;
+  const error = new UnauthorizedError("Incorrect email or password");
 
   return this.findOne({ email })
     .select("+password")
