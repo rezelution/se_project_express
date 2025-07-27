@@ -8,18 +8,20 @@
 
 ## Technologies Used
 
-| Technology   | Purpose                                                |
-| ------------ | ------------------------------------------------------ |
-| Node.js      | JavaScript runtime for server-side code                |
-| Express.js   | Web framework to build RESTful APIs                    |
-| MongoDB      | NoSQL database for storing users and clothes           |
-| Mongoose     | ODM to model and validate MongoDB schemas              |
-| Helmet       | Middleware to set secure HTTP headers                  |
-| Validator    | Validate email, avatar, and image URLs                 |
-| bcryptjs     | Hash and compare passwords securely                    |
-| jsonwebtoken | Generate and verify JWTs for user sessions             |
-| dotenv       | Manage environment variables                           |
-| CORS         | Enable cross-origin requests between front-end and API |
+| Technology    | Purpose                                                |
+| ------------- | ------------------------------------------------------ |
+| Node.js       | JavaScript runtime for server-side code                |
+| Express.js    | Web framework to build RESTful APIs                    |
+| MongoDB       | NoSQL database for storing users and clothes           |
+| Mongoose      | ODM to model and validate MongoDB schemas              |
+| Helmet        | Middleware to set secure HTTP headers                  |
+| Joi/Celebrate | Validate request bodies and params                     |
+| Validator     | Validate email, avatar, and image URLs                 |
+| bcryptjs      | Hash and compare passwords securely                    |
+| jsonwebtoken  | Generate and verify JWTs for user sessions             |
+| dotenv        | Manage environment variables                           |
+| Winston       | Structured logging for requests and errors             |
+| CORS          | Enable cross-origin requests between front-end and API |
 
 ---
 
@@ -62,6 +64,9 @@
 - Enabled **profile editing** (name and avatar updates)
 - Secure routes with ownership checks and user-based content access
 - Extended schema validation for all endpoints and models
+- **Centralized error handling** using custom error constructors and middleware
+- **Request validation** using Joi and Celebrate in a separate middleware
+- **Structured logging** implemented via Winston for both requests and errors
 
 ---
 
@@ -71,12 +76,13 @@
 - **Validator** to ensure safe and well-formed inputs
 - **Hashed Passwords** using bcrypt
 - **JWTs** for stateless and secure session handling
+- **Celebrate** + **Joi** to sanitize and validate incoming requests
 
 ---
 
 ## Error Handling
 
-Supports standardized error responses:
+Supports standardized error responses via a centralized error handler:
 
 - `400` – Validation or bad input
 - `401` – Unauthorized (JWT missing/invalid)
@@ -103,6 +109,22 @@ Supports standardized error responses:
 
 - Deletion and update routes require item ownership
 - Forbidden requests return `403`
+
+### 🧰 Centralized Error Handling
+
+- Custom `NotFoundError`, `BadRequestError`, `UnauthorizedError`, etc.
+- All errors funneled to one middleware for consistent responses
+
+### ✅ Request Validation
+
+- All routes validated using Joi schemas
+- Celebrate middleware ensures only valid data hits your logic
+- Validator package ensures URL/email formatting
+
+### 📋 Logging
+
+- Winston logger used to log all incoming requests and server errors
+- Logs stored and formatted for easier debugging and auditing
 
 ---
 

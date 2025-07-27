@@ -42,8 +42,7 @@ module.exports.validateUserCreation = celebrate({
       "string.empty": 'The "name" field must be filled in',
     }),
 
-    imageUrl: Joi.string().required().custom(validateURL).messages({
-      "string.empty": 'The "imageUrl" field must be filled in',
+    imageUrl: Joi.string().uri().allow(null).optional().messages({
       "string.uri": 'the "imageUrl" field must be a valid url',
     }),
 
@@ -90,9 +89,11 @@ module.exports.validateUserUpdate = celebrate({
       "string.max": 'The maximum length of the "name" field is 30',
       "string.empty": 'The "name" field must be filled in',
     }),
-    imageUrl: Joi.string().uri().required().custom(validateURL).messages({
-      "string.empty": 'The "imageUrl" field must be filled in',
-      "string.uri": 'The "imageUrl" must be a valid URL',
-    }),
+    imageUrl: Joi.alternatives()
+      .try(Joi.string().uri().custom(validateURL), Joi.valid(null))
+      .optional()
+      .messages({
+        "string.uri": 'The "imageUrl" must be a valid URL',
+      }),
   }),
 });
