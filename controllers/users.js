@@ -10,7 +10,8 @@ const ConflictError = require("../errors/conflictError");
 module.exports.getCurrentUser = (req, res, next) => {
   console.log(req.user);
   Users.findById(req.user._id)
-    .orFail()
+    .orFail(() => new NotFoundError("User not found"))
+
     .then((user) => {
       if (!user) {
         throw new BadRequestError("No user with matching ID found");
@@ -27,11 +28,11 @@ module.exports.getCurrentUser = (req, res, next) => {
 };
 
 module.exports.createUser = (req, res, next) => {
-  const { name, imageUrl, email, password } = req.body;
+  const { name, avatar, email, password } = req.body;
 
   bcrypt
     .hash(password, 10)
-    .then((hash) => Users.create({ name, imageUrl, email, password: hash }))
+    .then((hash) => Users.create({ name, avatar, email, password: hash }))
     .then((user) => sendUserResponse(res, user))
     .catch((err) => {
       if (err.code === 11000) {
@@ -62,10 +63,10 @@ module.exports.login = (req, res, next) => {
 };
 
 module.exports.updateProfile = (req, res, next) => {
-  const { name, imageUrl } = req.body;
+  const { name, avatar } = req.body;
   Users.findByIdAndUpdate(
     req.user._id,
-    { name, imageUrl },
+    { name, avatar },
     {
       new: true,
       runValidators: true,

@@ -1,5 +1,7 @@
 const ClothingItems = require("../models/clothingItems");
 const ForbiddenError = require("../errors/forbiddenError");
+const BadRequestError = require("../errors/badRequestError");
+const NotFoundError = require("../errors/notFoundError");
 
 module.exports.getItems = (req, res, next) => {
   ClothingItems.find({})
@@ -12,12 +14,18 @@ module.exports.postItems = (req, res, next) => {
   const owner = req.user._id;
   ClothingItems.create({ name, weather, imageUrl, owner })
     .then((clothingItems) => res.send({ data: clothingItems }))
-    .catch((err) => next(err));
+    .catch((err) => {
+      if (err.name === "ValidationError") {
+        next(new BadRequestError("Invalid data provided"));
+      } else {
+        next(err);
+      }
+    });
 };
 
 module.exports.deleteItem = (req, res, next) => {
   ClothingItems.findById(req.params.id)
-    .orFail()
+    .orFail(() => new NotFoundError("User not found"))
     .then((item) => {
       if (item.owner.toString() !== req.user._id.toString()) {
         throw new ForbiddenError(
@@ -36,7 +44,7 @@ module.exports.likeItems = (req, res, next) => {
     { $addToSet: { likes: req.user._id } }, // add _id to the array if it's not there yet
     { new: true }
   )
-    .orFail()
+    .orFail(() => new NotFoundError("User not found"))
     .then((clothingItems) => res.send({ data: clothingItems }))
     .catch((err) => next(err));
 };
@@ -47,7 +55,7 @@ module.exports.dislikeItems = (req, res, next) => {
     { $pull: { likes: req.user._id } }, // remove _id from the array
     { new: true }
   )
-    .orFail()
+    .orFail(() => new NotFoundError("User not found"))
     .then((clothingItems) => res.send({ data: clothingItems }))
     .catch((err) => next(err));
 };

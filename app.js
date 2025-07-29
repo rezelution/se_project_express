@@ -8,6 +8,7 @@ const { errors } = require("celebrate");
 const router = require("./routes/index");
 const errorHandler = require("./middlewares/error-handler");
 const { requestLogger, errorLogger } = require("./middlewares/logger");
+const limiter = require("./middlewares/rate-limiter");
 
 // listen to port 3001
 const { PORT = 3001 } = process.env;
@@ -29,11 +30,14 @@ mongoose.connection.on("disconnected", () => {
   console.log("⚠️ Disconnected from MongoDB");
 });
 
+
+
 app.use(express.json());
 
 app.use(helmet());
 app.use(cors());
 app.use(requestLogger);
+app.use(limiter);
 app.get("/crash-test", () => {
   setTimeout(() => {
     throw new Error("Server will crash now");

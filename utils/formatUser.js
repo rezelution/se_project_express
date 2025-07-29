@@ -2,7 +2,7 @@ function formatUser(user) {
   return {
     name: user.name,
     email: user.email,
-    imageUrl: user.imageUrl,
+    avatar: user.avatar,
     _id: user._id,
   };
 }
